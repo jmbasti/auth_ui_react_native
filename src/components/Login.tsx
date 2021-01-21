@@ -25,9 +25,21 @@ export default function Login({ route, navigation }: AuthNavProps<"Login">) {
       <Logo source={require("../../assets/logo.png")} />
       <Content>
         <Text>Welcome!</Text>
-        <EmailInput placeholder='Email' placeholderTextColor='#9c9b9a' />
+        <EmailInput
+          placeholder='Email'
+          placeholderTextColor='#9c9b9a'
+          value={email}
+          onChangeText={(email) => setEmail(email)}
+          autoCapitalize='none'
+        />
         <Password>
-          <PasswordInput placeholder='Password' placeholderTextColor='#fff' />
+          <PasswordInput
+            placeholder='Password'
+            placeholderTextColor='#fff'
+            secureTextEntry
+            value={password}
+            onChangeText={(password) => setPassword(password)}
+          />
           <Feather
             name='eye'
             size={30}
