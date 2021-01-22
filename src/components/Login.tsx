@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Dimensions,
   Platform,
@@ -7,15 +7,43 @@ import {
 } from "react-native";
 import styled from "styled-components/native";
 import { Feather } from "@expo/vector-icons";
+// COMPONENTS
+import { AppButton } from "./AppButton";
+
+// TYPES
 import { AuthNavProps } from "../types/AuthParamList";
+
+// FORMIK
+import { Formik, FormikErrors } from "formik";
+import { useFormik } from "formik";
+// YUP
+import * as Yup from "yup";
 
 const width = Dimensions.get("screen").width;
 
 export default function Login({ route, navigation }: AuthNavProps<"Login">) {
-  //
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  //
+  // FORMIK
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    // YUP VALIDATION SCHEMA
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email("Please enter valid email")
+        .required("Email address is required"),
+      password: Yup.string()
+        .min(8, ({ min }) => `Password must be at least ${min} characters`)
+        .required("Password is required"),
+    }),
+
+    onSubmit: (values, { resetForm }) => {
+      // CLEAR THE FORM AFTER SUBMISSION
+      setTimeout(resetForm, 1000);
+    },
+  });
+
   return (
     <Container>
       <ImageBackground
@@ -25,34 +53,58 @@ export default function Login({ route, navigation }: AuthNavProps<"Login">) {
       <Logo source={require("../../assets/logo.png")} />
       <Content>
         <Text>Welcome!</Text>
-        <EmailInput
-          placeholder='Email'
-          placeholderTextColor='#9c9b9a'
-          value={email}
-          onChangeText={(email) => setEmail(email)}
-          autoCapitalize='none'
-        />
-        <Password>
-          <PasswordInput
-            placeholder='Password'
-            placeholderTextColor='#fff'
-            secureTextEntry
-            value={password}
-            onChangeText={(password) => setPassword(password)}
+        <FormGroup>
+          <EmailInput
+            placeholder='Email'
+            placeholderTextColor='#9c9b9a'
+            value={formik.values.email}
+            autoCapitalize='none'
+            autoCorrect={false}
+            onChangeText={formik.handleChange("email")}
+            onBlur={formik.handleBlur("email")}
+            keyboardType='email-address'
+            textContentType='emailAddress'
           />
-          <Feather
-            name='eye'
-            size={30}
-            color='#fff'
-            style={{ fontSize: 35, alignSelf: "center", marginHorizontal: -50 }}
-          />
-        </Password>
+
+          <ErrorContent>
+            {formik.errors.email && formik.touched.email && (
+              <ErrorText>{formik.errors.email}</ErrorText>
+            )}
+          </ErrorContent>
+        </FormGroup>
+        <FormGroup>
+          <PasswordContainer>
+            <PasswordInput
+              placeholder='Password'
+              placeholderTextColor='#fff'
+              secureTextEntry
+              value={formik.values.password}
+              autoCapitalize='none'
+              autoCorrect={false}
+              onChangeText={formik.handleChange("password")}
+              onBlur={formik.handleBlur("password")}
+              textContentType='password'
+            />
+            <Feather
+              name='eye'
+              color='#fff'
+              style={{
+                fontSize: 24,
+                alignSelf: "center",
+                marginHorizontal: -50,
+              }}
+            />
+          </PasswordContainer>
+          <ErrorContent>
+            {formik.errors.password && formik.touched.password && (
+              <ErrorText>{formik.errors.password}</ErrorText>
+            )}
+          </ErrorContent>
+        </FormGroup>
+
         <ForgotText>Forgot password or login?</ForgotText>
-        <TouchableOpacity>
-          <LoginButton>
-            <ButtonText>Login</ButtonText>
-          </LoginButton>
-        </TouchableOpacity>
+
+        <AppButton onPress={formik.handleSubmit} />
 
         <TouchableOpacity>
           <RegisterButton>
@@ -70,6 +122,9 @@ const Container = styled.View`
   flex: 1;
 `;
 
+const FormGroup = styled.View`
+  margin-bottom: 10px;
+`;
 const Logo = styled.Image`
   height: 100px;
   width: 100px;
@@ -97,7 +152,13 @@ const ImageBackground = styled.ImageBackground`
   flex: 1;
   justify-content: center;
 `;
-
+const ErrorContent = styled.View`
+  height: 15px;
+`;
+const ErrorText = styled.Text`
+  font-size: 16px;
+  color: #fff;
+`;
 const Text = styled.Text`
   font-weight: bold;
   font-size: 40px;
@@ -109,22 +170,21 @@ const Text = styled.Text`
 const EmailInput = styled.TextInput`
   background-color: #faf3ed;
   width: 100%;
-  height: 68px;
+  height: 60px;
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 18px;
-  margin-bottom: 15px;
 `;
-const Password = styled.View`
+const PasswordContainer = styled.View`
   flex-direction: row;
   align-items: center;
 `;
 const PasswordInput = styled.TextInput`
   background-color: #acaaaa;
   width: 100%;
-  height: 68px;
+  height: 60px;
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 18px;
 `;
 
@@ -132,9 +192,9 @@ const RegisterButton = styled.View`
   background-color: transparent;
   border: 1px solid #faf3ed;
   width: 100%;
-  height: 68px;
+  height: 60px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 16px;
   margin-bottom: 15px;
   justify-content: center;
@@ -144,9 +204,9 @@ const RegisterButton = styled.View`
 const LoginButton = styled.View`
   background-color: #1a1a1a;
   width: 100%;
-  height: 68px;
+  height: 60px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 18px;
   margin-bottom: 15px;
   justify-content: center;
@@ -171,6 +231,6 @@ const ForgotText = styled.Text`
   font-weight: bold;
   font-size: 16px;
   color: #fff;
-  margin-top: 20px;
+
   margin-bottom: 20px;
 `;
